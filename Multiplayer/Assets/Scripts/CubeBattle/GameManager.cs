@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
 
         NetworkManager.Singleton.OnClientConnectedCallback += onClientConnected;
         NetworkManager.Singleton.OnClientDisconnectCallback += onClientDisconnect;
+        NetworkManager.Singleton.OnServerStarted+=()=>{SpawnCoins();};
     }
 
     private void SpawnCoins()
@@ -44,7 +45,6 @@ public class GameManager : MonoBehaviour
         if (NetworkManager.Singleton.StartServer())
         {
             Debug.Log("Server start success");
-            SpawnCoins();
         }
         else
         {
@@ -69,7 +69,6 @@ public class GameManager : MonoBehaviour
         if (NetworkManager.Singleton.StartHost())
         {
             Debug.Log("Host start success");
-            SpawnCoins();
         }
         else
         {

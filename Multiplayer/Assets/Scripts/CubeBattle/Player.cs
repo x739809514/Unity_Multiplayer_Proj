@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.UI;
+using Unity.VisualScripting;
 
 
 public class Player : NetworkBehaviour
@@ -80,5 +81,12 @@ public class Player : NetworkBehaviour
         Quaternion delta = Quaternion.Euler(0, horizontal * turnSpeed * Time.deltaTime, 0);
         target = rb.rotation * delta;
         rb.MoveRotation(target);
+    }
+
+    private void OnCollisionEnter(Collision other) {
+        if(other.gameObject.CompareTag("Coin")){
+           var coin =  other.gameObject.GetComponent<Coin>();
+           coin.SetCoinActive(false);
+        }
     }
 }
