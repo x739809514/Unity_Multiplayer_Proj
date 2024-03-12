@@ -18,9 +18,6 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // SpawnPlayer();
-        // SpawnCoins();
-
         btnServer.onClick.AddListener(ServerOnClick);
         btnClient.onClick.AddListener(ClientOnClick);
         btnHost.onClick.AddListener(HostOnClick);
@@ -30,18 +27,12 @@ public class GameManager : MonoBehaviour
         NetworkManager.Singleton.OnClientDisconnectCallback += onClientDisconnect;
     }
 
-    private void SpawnPlayer()
-    {
-        var player = Instantiate<GameObject>(playerPrefab);
-        player.transform.position = new Vector3(0, 3, 0);
-        player.SetActive(true);
-    }
-
     private void SpawnCoins()
     {
         for (int i = 0; i < coinsNumber; i++)
         {
             var coin = Instantiate<GameObject>(coinPrefab);
+            coin.gameObject.GetComponent<NetworkObject>().Spawn();
             coin.transform.position = new Vector3(i + 2, 3, i - 2);
             coin.SetActive(true);
         }
@@ -53,6 +44,7 @@ public class GameManager : MonoBehaviour
         if (NetworkManager.Singleton.StartServer())
         {
             Debug.Log("Server start success");
+            SpawnCoins();
         }
         else
         {
@@ -77,6 +69,7 @@ public class GameManager : MonoBehaviour
         if (NetworkManager.Singleton.StartHost())
         {
             Debug.Log("Host start success");
+            SpawnCoins();
         }
         else
         {
