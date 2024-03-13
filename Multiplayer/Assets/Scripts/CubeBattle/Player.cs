@@ -1,8 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.UI;
-using Unity.VisualScripting;
-using System.Collections.Generic;
 
 
 public class Player : NetworkBehaviour
