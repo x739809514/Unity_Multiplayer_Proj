@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.UI;
 using Unity.VisualScripting;
+using System.Collections.Generic;
 
 
 public class Player : NetworkBehaviour
@@ -12,6 +13,8 @@ public class Player : NetworkBehaviour
     private float horizontal;
     private float vertical;
     private Color[] colors = { Color.black, Color.white, Color.red };
+    [SerializeField]
+    private ulong[] touchIds;
 
     // NetworkVariable is used to synchornize variable between client and server
     private NetworkVariable<Vector3> vPos = new NetworkVariable<Vector3>();
@@ -83,10 +86,46 @@ public class Player : NetworkBehaviour
         rb.MoveRotation(target);
     }
 
-    private void OnCollisionEnter(Collision other) {
-        if(other.gameObject.CompareTag("Coin")){
-           var coin =  other.gameObject.GetComponent<Coin>();
-           coin.SetCoinActive(false);
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.CompareTag("Coin"))
+        {
+            var coin = other.gameObject.GetComponent<Coin>();
+            coin.SetCoinActive(false);
+        }
+        else if (other.gameObject.CompareTag("Player"))
+        {
+            if (this.IsClient && this.IsOwner)
+            {
+                var targetClientId = other.gameObject.GetComponent<NetworkObject>().OwnerClientId;
+                if (touchIds == null) touchIds = new ulong[] { targetClientId };
+                OnCollisionWithPlayerRpc(this.OwnerClientId, touchIds);
+            }
+        }
+    }
+
+    // in Rpc system, the method will be called on server version and local version
+    // in  this case, "OnCollisionWithPlayerRpc" is also excuted in server version
+    [Rpc(SendTo.Server)]
+    private void OnCollisionWithPlayerRpc(ulong fromId, ulong[] toId)
+    {
+        ClientRpcParams rpcParams = new ClientRpcParams()
+        {
+            Send = new ClientRpcSendParams()
+            {
+                TargetClientIds = toId
+            }
+        };
+        NoticeCollisionToClientRpc(fromId);
+    }
+
+    // Server send notify to a specific client, not every clients
+    [Rpc(SendTo.ClientsAndHost)]
+    private void NoticeCollisionToClientRpc(ulong id)
+    {
+        if (!this.IsOwner && this.OwnerClientId == id)
+        {
+            Debug.Log("the target player's id is: " + id);
         }
     }
 }
